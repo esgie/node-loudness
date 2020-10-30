@@ -23,7 +23,7 @@ async function getDefaultDevice () {
   return (defaultDeviceCache = parseDefaultDevice(await amixer()))
 }
 
-const reInfo = /[a-z][a-z ]*: Playback [0-9-]+ \[([0-9]+)%\] (?:[[0-9.-]+dB\] )?\[(on|off)\]/i
+const reInfo = /Front Left: [0-9-]+ \[([0-9]+)%\]/i
 
 function parseInfo (data) {
   const result = reInfo.exec(data)
@@ -32,7 +32,7 @@ function parseInfo (data) {
     throw new Error('Alsa Mixer Error: failed to parse output')
   }
 
-  return { volume: parseInt(result[1], 10), muted: (result[2] === 'off') }
+  return { volume: parseInt(result[1], 10) }
 }
 
 async function getInfo () {
@@ -48,9 +48,9 @@ exports.setVolume = async function setVolume (val) {
 }
 
 exports.getMuted = async function getMuted () {
-  return (await getInfo()).muted
+  return (await getInfo()).volume == 0
 }
 
 exports.setMuted = async function setMuted (val) {
-  await amixer('set', await getDefaultDevice(), val ? 'mute' : 'unmute')
+  await amixer('set', await getDefaultDevice(), val ? '0' : '100')
 }
